@@ -1,0 +1,21 @@
+{
+    "name": "MainMenu",
+    "scenePath": "assets/scenes/MainMenu.scene",
+    "scriptUuid": "",
+    "nodes": [
+        { "name": "Canvas", "parent": null, "position": [0, 0, 0] },
+        { "name": "Camera", "parent": "Canvas", "position": [0, 0, 1000] },
+        { "name": "TitleLabel", "parent": "Canvas", "position": [0, 400, 0] },
+        { "name": "StartButton", "parent": "Canvas", "position": [0, -200, 0] }
+    ],
+    "components": [
+        { "type": "UITransform", "node": "Canvas", "size": [1080, 1920] },
+        { "type": "Canvas", "node": "Canvas", "camera": "Camera", "designWidth": 1080, "designHeight": 1920 },
+        { "type": "Camera", "node": "Camera" },
+        { "type": "UITransform", "node": "TitleLabel", "size": [600, 80] },
+        { "type": "Label", "node": "TitleLabel", "text": "太空拾荒者", "fontSize": 64, "lineHeight": 72, "color": [255, 215, 0, 255], "bold": true, "hAlign": 1, "vAlign": 1 },
+        { "type": "UITransform", "node": "StartButton", "size": [280, 64] },
+        { "type": "Button", "node": "StartButton", "target": "StartButton" },
+        { "type": "Label", "node": "StartButton", "text": "开始游戏", "fontSize": 36, "lineHeight": 44, "color": [255, 255, 255, 255] }
+    ]
+}

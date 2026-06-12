@@ -1,0 +1,17 @@
+{
+  "name": "cocos-builder-tools",
+  "version": "1.0.0",
+  "description": "Cocos Creator Prefab/Scene JSON 构建器 + UUID 工具",
+  "main": "cocos-builder.js",
+  "bin": {
+    "cocos-builder": "cli.js"
+  },
+  "files": [
+    "lib/",
+    "demo/",
+    "cli.js",
+    "cocos-builder.js"
+  ],
+  "keywords": ["cocos-creator", "prefab", "scene", "builder", "uuid"],
+  "license": "MIT"
+}
