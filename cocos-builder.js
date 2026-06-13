@@ -8,6 +8,8 @@
 //   node cocos-builder.js scene <config.json> [output]    → create/append Scene
 //   node cocos-builder.js uuid                            → UUID validation
 //   node cocos-builder.js uuid <uuid|compressed>          → UUID compress/decompress
+//   node cocos-builder.js clean <scene> [scene2 ...]      → strip _id fields
+//   node cocos-builder.js clean-cache                     → clean library/ temp/
 // ============================================================
 
 const { compressUuid, decompressUuid, generateFileIdV4 } = require('./lib/uuid');
@@ -20,5 +22,5 @@ module.exports = { PrefabBuilder, SceneBuilder, compressUuid, decompressUuid, ge
 
 // ---- CLI entry forwarder ----
 if (require.main === module) {
-    require('./cli');
+    require('./cli.js');
 }

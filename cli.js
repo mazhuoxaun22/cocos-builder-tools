@@ -20,7 +20,7 @@ const { PrefabBuilder, SceneBuilder, compressUuid, decompressUuid, KNOWN_UUIDS, 
 function main(args) {
     if (args.length === 0) {
         console.log('🔧 No args → running built-in Demo');
-        require('./demo/game-over-panel').build();
+        require('./demo/demo-panel').build();
         return;
     }
 
@@ -39,7 +39,7 @@ function main(args) {
                 console.log(`${name}: ${cOk ? '✅' : '❌'} compress ${dOk ? '✅' : '❌'} decompress`);
                 if (!cOk || !dOk) allPass = false;
             }
-            const demoUuid = '4c18be38-6250-4b43-9d40-d65e3a7df141';
+            const demoUuid = 'bcb36bda-f613-4c6d-8c78-15fbc3810c89';
             const demoCompressed = compressUuid(demoUuid);
             console.log(`\nDemo UUID: ${demoUuid}`);
             console.log(`Compressed:  ${demoCompressed} (${demoCompressed.length} chars)`);

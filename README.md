@@ -28,7 +28,7 @@ node cli.js <command>
 ## CLI Usage
 
 ```bash
-# Run built-in demo (generates GameOverPanel.prefab + UIDemo.scene)
+# Run built-in demo (generates DemoPanel.prefab)
 node cli.js
 
 # UUID tools
@@ -56,8 +56,8 @@ node cli.js clean-cache
 ```json
 {
   "name": "MyPanel",
-  "scriptUuid": "4c18b44YlBLQ51A1l46ffFB",
-  "outputPath": "assets/resources/prefabs/ui/MyPanel.prefab",
+  "scriptUuid": "<your-script-uuid>",
+  "outputPath": "assets/prefabs/MyPanel.prefab",
   "fileIdPrefix": "myPanel",
   "nodes": [
     { "name": "Root", "parent": null, "position": [0, 0, 0] },
@@ -74,8 +74,8 @@ node cli.js clean-cache
 
 ```json
 {
-  "name": "MainMenu",
-  "scenePath": "assets/scenes/MainMenu.scene",
+  "name": "MyScene",
+  "scenePath": "assets/scenes/MyScene.scene",
   "nodes": [
     { "name": "Canvas", "parent": null },
     { "name": "Camera", "parent": "Canvas", "position": [0, 0, 1000] }
@@ -105,7 +105,7 @@ b.addNode({ name: 'Root', parent: null })
  .write();
 
 // Build a scene
-const s = new SceneBuilder({ name: 'MainMenu', scenePath: 'assets/scenes/MainMenu.scene' });
+const s = new SceneBuilder({ name: 'MyScene', scenePath: 'assets/scenes/MyScene.scene' });
 s.addNode({ name: 'Canvas', parent: null })
  .addCamera({ node: 'Canvas' })
  .write();
@@ -129,11 +129,12 @@ _tools/
 │   ├── scene-builder.js   # Scene builder
 │   └── clean.js           # Strip _id from scenes
 ├── demo/                   # Runnable demos
-│   ├── game-over-panel.js
+│   ├── demo-panel.js
 │   └── ui-demo-scene.js
 ├── examples/               # Example configs
 │   └── scene-config.example.json
-└── stress-full.js          # Full stress test suite
+└── docs/                   # Documentation
+    └── zh-CN.md
 ```
 
 ## Important Notes

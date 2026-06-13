@@ -138,10 +138,10 @@ node._components.push({ "__id__": newCompIdx })
 
 ```json
 // ✅ 正确：压缩 UUID（23 字符）
-{ "__type__": "4c18b44YlBLQ51A1l46ffFB" }
+{ "__type__": "bcb36va9hNMbYx4FfvDgQyJ" }
 
 // ❌ 错误：原始 UUID（36 字符）
-{ "__type__": "4c18be38-6250-4b43-9d40-d65e3a7df141" }
+{ "__type__": "bcb36bda-f613-4c6d-8c78-15fbc3810c89" }
 ```
 
 原因：引擎的 classFinder 用压缩 UUID 做映射 key，原始 UUID 无法匹配。
@@ -186,9 +186,9 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
 
 | 使用场景 | 格式 | 示例长度 |
 |---------|------|---------|
-| `.meta` 文件 | **压缩** 23-char | `4c18b44YlBLQ51A1l46ffFB` |
+| `.meta` 文件 | **压缩** 23-char | `bcb36va9hNMbYx4FfvDgQyJ` |
 | Scene/Prefab `__type__` | **压缩** 23-char | 同上 |
-| 资源引用 `__uuid__` | **原始** 36-char | `4c18be38-6250-4b43-9d40-d65e3a7df141` |
+| 资源引用 `__uuid__` | **原始** 36-char | `bcb36bda-f613-4c6d-8c78-15fbc3810c89` |
 | `PrefabInfo.fileId` | 原始 UUID-v4 | `a1b2c3d4-...` |
 | `CompPrefabInfo.fileId` | 压缩 23-char | 同压缩格式 |
 
@@ -197,13 +197,12 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
 ```javascript
 // 引擎内部映射表（启动时从所有 .meta 构建）
 {
-  "4c18b44YlBLQ51A1l46ffFB": "db://assets/Scripts/GameOverPanelUI.ts",
-  "560feGM3htMUbBaEw5wHPsI": "db://assets/Scripts/DropCardUI.ts",
+  "<compressed-uuid>": "db://assets/Scripts/MyScript.ts",
 }
 
 // 场景反序列化
-__type__: "4c18b44YlBLQ..."
-  → 查表 → "db://.../GameOverPanelUI.ts"
+__type__: "bcb36va9hNMb..."
+  → 查表 → "db://.../MyScript.ts"
   → require() → 构造函数 → new() → 组件实例
 ```
 
@@ -287,7 +286,7 @@ _tools/
 ├── cocos-builder.js              # 主入口（导出 + CLI 转发）
 ├── cli.js                        # CLI 入口（package.json bin 指向此文件）
 ├── package.json                  # Node 工具包配置
-├── cocos工具手册.md               # 本文档
+├── docs/zh-CN.md                 # 本文档
 ├── examples/                     # 示例配置
 │   └── scene-config.example.json
 ├── lib/                          # 核心模块（9 个 .js）
@@ -301,7 +300,7 @@ _tools/
 │   ├── scene-builder.js          #   Scene 构建器
 │   └── clean.js                  #   清理场景 _id 字段
 └── demo/                         # 可独立运行的 Demo 脚本
-    ├── game-over-panel.js        #   演示：生成 GameOverPanel.prefab
+    ├── demo-panel.js             #   演示：生成 DemoPanel.prefab
     └── ui-demo-scene.js          #   演示：生成 UIDemo.scene
 ```
 
@@ -349,13 +348,13 @@ node cocos-builder.js clean-cache                        # 清理 library/ temp/
 
 **命令输出示例**：
 ```bash
-$ node cocos-builder.js uuid "4c18be38-6250-4b43-9d40-d65e3a7df141"
-UUID压缩: 4c18be38... → 4c18b44YlBLQ51A1l46ffFB
+$ node cocos-builder.js uuid "bcb36bda-f613-4c6d-8c78-15fbc3810c89"
+UUID压缩: bcb36bda... → bcb36va9hNMbYx4FfvDgQyJ
 
 $ node cocos-builder.js prefab prefab-config.example.json
 📄 配置: prefab-config.example.json
-✅ Prefab新建成功! 名称: GameOverPanel  总对象: 25
-   写入: assets/resources/prefabs/ui/GameOverPanel.prefab
+✅ Prefab新建成功! 名称: DemoPanel  总对象: 25
+   写入: assets/prefabs/DemoPanel.prefab
 ```
 
 ---
@@ -366,10 +365,10 @@ $ node cocos-builder.js prefab prefab-config.example.json
 
 ```json
 {
-  "name": "GameOverPanel",
-  "scriptUuid": "4c18b44YlBLQ51A1l46ffFB",
-  "outputPath": "assets/resources/prefabs/ui/GameOverPanel.prefab",
-  "fileIdPrefix": "gameOver",
+  "name": "DemoPanel",
+  "scriptUuid": "<your-script-uuid>",
+  "outputPath": "assets/prefabs/DemoPanel.prefab",
+  "fileIdPrefix": "demoPnl",
   "loadPath": null,
   "nodes": [
     { "name": "MyRoot", "parent": null, "position": [0, 0, 0] },
@@ -410,8 +409,8 @@ $ node cocos-builder.js prefab prefab-config.example.json
 
 ```json
 {
-  "name": "MainMenu",
-  "scenePath": "assets/scenes/MainMenu.scene",
+  "name": "MyScene",
+  "scenePath": "assets/scenes/MyScene.scene",
   "nodes": [
     { "name": "Canvas", "parent": null, "position": [0, 0, 0] },
     { "name": "Camera", "parent": "Canvas", "position": [0, 0, 1000] },
@@ -577,7 +576,7 @@ const {
 ```javascript
 const b = new PrefabBuilder({
   name: 'MyPanel',
-  scriptUuid: '4c18b44YlBLQ51A1l46ffFB',   // 压缩 UUID
+  scriptUuid: 'bcb36va9hNMbYx4FfvDgQyJ',   // 压缩 UUID
   outputPath: 'assets/prefabs/MyPanel.prefab',
   fileIdPrefix: 'myPanel'
 });
@@ -606,8 +605,8 @@ b.write();  // 或 b.build() 获取数组自己写入
 
 ```javascript
 const sb = new SceneBuilder({
-  name: 'MainMenu',
-  scenePath: 'assets/scenes/MainMenu.scene'
+  name: 'MyScene',
+  scenePath: 'assets/scenes/MyScene.scene'
 });
 
 sb.addNode({ name: 'Canvas', parent: null })
@@ -623,12 +622,12 @@ sb.write();
 
 ```javascript
 // 压缩
-compressUuid('4c18be38-6250-4b43-9d40-d65e3a7df141')
-// → '4c18b44YlBLQ51A1l46ffFB'
+compressUuid('bcb36bda-f613-4c6d-8c78-15fbc3810c89')
+// → 'bcb36va9hNMbYx4FfvDgQyJ'
 
 // 解压
-decompressUuid('4c18b44YlBLQ51A1l46ffFB')
-// → '4c18be38-6250-4b43-9d40-d65e3a7df141'
+decompressUuid('bcb36va9hNMbYx4FfvDgQyJ')
+// → 'bcb36bda-f613-4c6d-8c78-15fbc3810c89'
 
 // 生成 UUID-v4（用于 PrefabInfo.fileId）
 generateFileIdV4()
@@ -664,7 +663,7 @@ b.moveComponent('NodeA', 'cc.Label', 'NodeB');
 b.addChildNode('Parent', 'NewChild', { size: [200, 60] });
 
 // 4. 便捷：新建子节点 + 移入组件（解决 renderable 冲突）
-b.moveComponentToChild('HpBar', 'HpText', 'cc.Label');
+b.moveComponentToChild('ParentNode', 'ChildNode', 'cc.Label');
 
 b.saveLoaded();   // Prefab: 直接写回
 sb.saveLoaded();  // Scene: 直接写回
@@ -730,8 +729,8 @@ SceneBuilder.fromJSON({ loadPath: 'assets/scenes/Game.scene', nodes: [...], comp
 ### 运行方式
 
 ```bash
-# 生成 GameOverPanel.prefab
-node demo/game-over-panel.js
+# 生成 DemoPanel.prefab
+node demo/demo-panel.js
 
 # 生成 UIDemo.scene
 node demo/ui-demo-scene.js
@@ -739,9 +738,9 @@ node demo/ui-demo-scene.js
 
 > 两个 Demo 的产物直接写入主项目 `assets/` 目录，不会污染 `_tools/`。
 
-### game-over-panel.js
+### demo-panel.js
 
-生成一个完整的 `GameOverPanel.prefab`，包含遮罩、标题、详情、返回按钮及自定义脚本绑定，输出到 `assets/resources/prefabs/ui/GameOverPanel.prefab`。
+生成一个完整的 `DemoPanel.prefab`，包含遮罩、标题、详情、按钮，输出到 `assets/prefabs/DemoPanel.prefab`。
 
 ### ui-demo-scene.js
 
