@@ -9,7 +9,9 @@
 //   node cli.js prefab <config.json> [output]   → 生成/追加 Prefab
 //   node cli.js scene <config.json> [output]    → 生成/追加 Scene
 //   node cli.js clean <scene1> [scene2 ...]     → 清理 _id
+//   node cli.js clean-cache                     → 清理 library/ temp/（工具生成后必须清理）
 // ============================================================
+
 
 const fs = require('fs');
 const path = require('path');
@@ -97,6 +99,23 @@ function main(args) {
         for (let i = 1; i < args.length; i++) {
             stripSceneFileIds(args[i]);
         }
+        return;
+    }
+
+    // ---- clean-cache 清理缓存 ---- （资产重新生成后必须执行）
+    if (mode === 'clean-cache') {
+        const dirs = ['library', 'temp'];
+        for (const d of dirs) {
+            const p = path.resolve(d);
+            if (fs.existsSync(p)) {
+                console.log(`🧹 清理缓存: ${p}`);
+                fs.rmSync(p, { recursive: true, force: true });
+                console.log(`   ✅ 已删除`);
+            } else {
+                console.log(`   ⏭️  跳过(不存在): ${p}`);
+            }
+        }
+        console.log('✅ 缓存清理完成，Cocos 编辑器下次打开将重新编译。');
         return;
     }
 

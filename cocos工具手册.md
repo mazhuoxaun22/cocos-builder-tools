@@ -332,7 +332,9 @@ _tools/
 |------|------|
 | 生成/追加 Prefab | 从零创建或追加节点到已有 .prefab |
 | 生成/追加 Scene | 从零创建或追加节点到已有 .scene |
+| 编辑已有文件 | moveNode/moveComponent/addChildNode/deleteNode/deleteComponent |
 | UUID 压缩/解压 | 交互式工具，验证映射关系 |
+| 清理缓存 | 清理 `library/` `temp/`（资产重新生成后必须执行） |
 | API 调用 | `require('./cocos-builder')` 编程式构建 |
 | 内置 Demo | `demo/` 下可独立运行，展示 Prefab/Scene 构建用法 |
 
@@ -359,6 +361,7 @@ node cocos-builder.js scene <config.json> <输出路径>      # 指定输出
 
 # 清理
 node cocos-builder.js clean <scene1.scene> [scene2 ...]  # 清除 cc.Scene._id
+node cocos-builder.js clean-cache                        # 清理 library/ temp/ 缓存目录
 ```
 
 **命令输出示例**：
@@ -376,7 +379,7 @@ $ node cocos-builder.js prefab prefab-config.example.json
 
 ## 四、JSON 配置格式
 
-### 3.1 Prefab 配置
+### 4.1 Prefab 配置
 
 ```json
 {
@@ -420,7 +423,7 @@ $ node cocos-builder.js prefab prefab-config.example.json
 | `static` | 否 | false | 静态标记 |
 | `scale` | 否 | `[1,1,1]` | 缩放 |
 
-### 3.2 Scene 配置
+### 4.2 Scene 配置
 
 ```json
 {
@@ -445,7 +448,21 @@ $ node cocos-builder.js prefab prefab-config.example.json
 
 区别：Scene 不需要 `scriptUuid`/`fileIdPrefix`；`outputPath` 换成 `scenePath`。
 
-### 3.3 追加模式
+**追加模式**：Scene 配置同样支持 `loadPath`。加入该字段后工具加载已有 Scene 并追加新节点/组件：
+
+```json
+{
+  "loadPath": "assets/scenes/Existing.scene",
+  "nodes": [
+    { "name": "NewNode", "parent": "Canvas", "position": [100, 0, 0] }
+  ],
+  "components": [
+    { "type": "UITransform", "node": "NewNode", "size": [50, 50] }
+  ]
+}
+```
+
+### 4.3 追加模式
 
 配置中加入 `loadPath` 即进入追加模式：
 
@@ -463,7 +480,7 @@ $ node cocos-builder.js prefab prefab-config.example.json
 
 内部处理：解析已有文件 → 偏移新对象 `__id__` → 合并数组 → 已有节点追加新引用。
 
-### 3.4 组件参数速查
+### 4.4 组件参数速查
 
 #### UITransform
 ```json
@@ -639,13 +656,86 @@ stripSceneFileIds('assets/scenes/MyScene.scene')
 // → 🧹 已清理 1 个 _id: assets/scenes/MyScene.scene
 ```
 
+### 编辑已有文件（移动节点/组件）
+
+加载已有 Prefab 或 Scene 后，可通过以下方法修改结构（仅改字段引用，不破坏 `__id__` 索引）。**以下方法 PrefabBuilder 和 SceneBuilder 通用**：
+
+```javascript
+// Prefab 示例
+const b = new PrefabBuilder({ name: 'Edit' });
+b.load('assets/prefabs/xxx.prefab');
+
+// Scene 示例
+const sb = new SceneBuilder({ name: 'Edit' });
+sb.load('assets/scenes/Game.scene');
+
+// --- 以下方法两者均支持 ---
+
+// 1. 节点搬家——改父节点
+b.moveNode('ChildA', 'NewParentB');
+
+// 2. 组件搬家——移到另一个已有节点
+b.moveComponent('NodeA', 'cc.Label', 'NodeB');
+
+// 3. 新建空白子节点（自动继承父节点尺寸）
+b.addChildNode('Parent', 'NewChild', { size: [200, 60] });
+
+// 4. 便捷：新建子节点 + 移入组件（解决 renderable 冲突）
+b.moveComponentToChild('HpBar', 'HpText', 'cc.Label');
+
+b.saveLoaded();   // Prefab: 直接写回
+sb.saveLoaded();  // Scene: 直接写回
+```
+
+| 方法 | 说明 |
+|------|------|
+| `moveNode(name, newParent)` | 节点搬家（改 `_parent` + 双方 `_children`） |
+| `moveComponent(fromNode, type, toNode)` | 组件搬家（改 `node.__id__` + 双方 `_components`） |
+| `addChildNode(parent, name, opts?)` | 新建空白子节点（仅 UITransform，返回 idx） |
+| `moveComponentToChild(parent, child, type, opts?)` | 等价 `addChildNode` + `moveComponent` |
+| `deleteNode(name)` | 安全删除节点及子树（**仅末尾**） |
+| `deleteComponent(nodeName, compType)` | 安全删除单个组件（**仅末尾**） |
+
+### 删除节点/组件（安全物理删除）
+
+安全的物理删除能力，与 `append-only` 原则互补——**仅当目标对象在数组末尾时**才执行物理删除（此时 splice 不影响其他索引）。**PrefabBuilder 和 SceneBuilder 通用**。
+
+```javascript
+// Prefab 示例
+const b = new PrefabBuilder({ name: 'Edit' });
+b.load('assets/prefabs/xxx.prefab');
+b.deleteNode('TestNode');                          // 删除节点及其所有子节点、组件、PrefabInfo
+b.deleteComponent('SomeNode', 'cc.Label');         // 删除单个组件及其 CompPrefabInfo
+b.saveLoaded();
+
+// Scene 示例
+const sb = new SceneBuilder({ name: 'Edit' });
+sb.load('assets/scenes/Game.scene');
+sb.deleteNode('MoveTestChild');
+sb.saveLoaded({ validate: true });                 // 写回前验证引用完整性
+```
+
+### saveLoaded 选项
+
+`saveLoaded(opts?)` 支持以下选项：
+
+| 选项 | 类型 | 说明 |
+|------|------|------|
+| `validate` | `boolean` | `true` 时写入前自动调用 `_validate()` 检测 ORPHAN、悬挂引用、renderable 冲突，发现问题即报错阻止写入 |
+
+> ⚠️ **安全机制**：`deleteNode`/`deleteComponent` 内部调用 `canSafeDelete` 检测目标是否在数组末尾。若不在末尾，抛错并建议：
+> 1. 先用 `moveNode` 把目标子树移至末尾
+> 2. 或软删除（设置 `_active = false`）
+
 ### 静态构建方法
 
 ```javascript
-// 从 JSON 配置直接构建
+// 从 JSON 配置直接构建（支持 loadPath 追加模式）
 PrefabBuilder.fromJSON('examples/scene-config.example.json').write();
 PrefabBuilder.fromJSON({ name: 'X', nodes: [...], components: [...] }).write();
 SceneBuilder.fromJSON('examples/scene-config.example.json').write();
+// Scene 追加模式：配置中加 "loadPath": "assets/scenes/Existing.scene"
+SceneBuilder.fromJSON({ loadPath: 'assets/scenes/Game.scene', nodes: [...], components: [...] }).write();
 ```
 
 ---
@@ -734,6 +824,28 @@ node demo/ui-demo-scene.js
 | 8 | `target.getComponent is not a function` | Button `_target` 为 `{"__id__": null}` | `_target` 写 `null`（或用工具 `Id()` 自动处理） |
 | 9 | "Widget target must be one of the parent nodes" | Widget `_target` 指向自身节点 | `targetRef` 设为父节点或 `null` |
 | 10 | "The uuid is already pointing to another asset" | prefab/ts 共用同一 UUID | 每个资产 `.meta` UUID 必须全局唯一 |
+| 11 | "The same node can't have more than one renderable component" | 节点上存在 Sprite+Label 或 Sprite+Graphics 等 | 将其中一个移到子节点：`moveComponentToChild()` |
+
+### 12. 手动删除节点安全规则（新增）
+
+| 情况 | 判断 | 做法 |
+|------|------|------|
+| 节点在数组末尾 | `deleteNode()` 自动检测并安全删除 | ✅ 直接用 |
+| 节点在数组中间 | 工具抛错阻止 | ① 先 `moveNode` 移到末尾 → `deleteNode` ② 或 `_active = false` 软删除 |
+| 节点有外部引用 | `_validate()` 报告 ORPHAN/悬挂 | 先清理引用，再删除 |
+
+### 13. 缓存清理（新增）
+
+**何时需要**：使用工具生成或修改 `.scene` / `.prefab` 后，Cocos 编辑器可能缓存旧版本数据。
+
+```bash
+# 清理所有编辑器缓存
+node cocos-builder.js clean-cache
+# → 删除 library/ 和 temp/ 目录
+# → Cocos 下次打开时自动重新编译
+```
+
+> ⚠️ 清理缓存后首次打开 Cocos 编辑器会较慢（需重新编译所有脚本），但这是解决"工具修改后编辑器不识别"的最可靠方式。
 
 ---
 
@@ -754,7 +866,10 @@ node demo/ui-demo-scene.js
 ⑫ 追加模式下不修改已有索引
 ⑬ Widget/Button/_parent 等引用字段无 `{"__id__": null}`（必须为字面量 `null`）
 ⑭ 每个资产 .meta UUID 全局唯一（prefab/ts/scene 互不冲突）
+⑮ 每个节点至多一个 renderable 组件（Sprite/Label/Graphics，冲突时用 moveComponentToChild）
 ```
+
+> 💡 **自动化验证**：调用 `builder.saveLoaded({ validate: true })` 可在写入前自动检测 ORPHAN 对象、悬挂引用和 renderable 冲突，无需手动逐项核对。
 
 ---
 
