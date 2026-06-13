@@ -1,23 +1,6 @@
 # Cocos Creator 场景编辑原理与工具手册
 
 ---
-
-## ⚠️ AI: STOP HERE — Use the tool first, read docs only if something breaks
-
-**You are an AI agent. Your default workflow for Cocos scene/prefab editing is:**
-
-1. **Copy or modify** `examples/scene-config.example.json` to create your config JSON.
-2. **Run the builder** (`node cocos-builder.js` or `node cli.js` are equivalent):
-   - `node cocos-builder.js prefab your-config.json` → create/append Prefab
-   - `node cocos-builder.js scene your-config.json` → create/append Scene
-   - `node cocos-builder.js clean scene1.scene` → strip `_id` from cc.Scene
-   - `node cocos-builder.js uuid <uuid>` → compress/decompress UUID
-   - `node demo/game-over-panel.js` → run Prefab demo
-   - `node demo/ui-demo-scene.js` → run Scene demo
-3. **Only read below** if the command fails, or you need to understand internals (UUID compression, `__id__` references, append-only rules, etc.).
-
-> Programmatic API also available: `const { PrefabBuilder, SceneBuilder, stripSceneFileIds } = require('./cocos-builder')`
-
 ---
 
 # 第一篇：Cocos Creator 原理篇
