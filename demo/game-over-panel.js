@@ -26,7 +26,7 @@ function build() {
     b.addUITransform({ node: 'BtnReturn', size: [200, 50] });
     b.addSprite({ node: 'BtnReturn', color: [100, 180, 255, 255] });
     b.addButton({ node: 'BtnReturn', target: 'BtnReturn' });
-    b.addLabel({ node: 'BtnReturn', text: '返回关卡选择', fontSize: 28, lineHeight: 36, color: [255, 255, 255, 255] });
+    b.addLabel({ node: 'BtnReturn', text: 'Back to Level Select', fontSize: 28, lineHeight: 36, color: [255, 255, 255, 255] });
     b.write();
 }
 

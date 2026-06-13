@@ -1,4 +1,4 @@
-// Demo 2: 基础 UI 场景（Scene）
+// Demo 2: Basic UI Scene
 const { SceneBuilder } = require('../cocos-builder');
 
 function build() {
