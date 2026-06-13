@@ -1,4 +1,4 @@
-// 全方位压力测试: 脚本组件 + 预制体嵌套引用
+// Full stress test: script components + prefab nested references
 const fs = require('fs');
 const path = require('path');
 const { generateFileIdV4, genObjId, compressUuid } = require('./lib/uuid');
@@ -57,7 +57,7 @@ function mockScriptUuid(name) {
   return `${h(name)}-${h(name+'a',4)}-4${h(name+'b',3)}-${'89ab'[name.length%4]}${h(name+'c',3)}-${h(name+'d',12)}`;
 }
 
-// 添加 PrefabInfo 引用外部预制体
+// Add PrefabInfo referencing external prefab
 function addNestedPrefabRef(arr, nodeName, targetUuid, prefix) {
   let nodeIdx = -1;
   for (let i = 0; i < arr.length; i++) {
@@ -176,7 +176,7 @@ SCRIPT_NAMES.forEach(n => ensureScriptFile(n));
         titleRef: { node: 'TitleText', component: 'Label' }, contentRef: { node: 'ContentText', component: 'Label' } } })
   },
 ].forEach(({ name, uuid, build }) => {
-  const prefabUuid = generateFileIdV4();  // prefab 必须有独立 UUID，不能与脚本冲突
+  const prefabUuid = generateFileIdV4();  // prefab must have independent UUID, cannot conflict with script
   BASE_UUIDS[name] = prefabUuid;
   const out = path.join(ROOT, 'prefabs', `${name}.prefab`);
   ensure(path.dirname(out));
@@ -186,10 +186,10 @@ SCRIPT_NAMES.forEach(n => ensureScriptFile(n));
   console.log(`  ✅ ${name}.prefab (脚本: ${uuid.substring(0, 8)}... prefab: ${prefabUuid.substring(0, 8)}...)`);
 });
 
-// ===== Phase 2: 预制体嵌套引用 =====
+// ===== Phase 2: Prefab Nested References =====
 console.log('\n=== Phase 2: 预制体嵌套引用 ===');
 
-// 2a. GameHUD — 嵌套 HealthPanel + CountdownTimer + ScriptButton
+// 2a. GameHUD — nested HealthPanel + CountdownTimer + ScriptButton
 {
   const hudUuid = generateFileIdV4();
   const out = path.join(ROOT, 'prefabs', 'GameHUD.prefab');
@@ -208,10 +208,10 @@ console.log('\n=== Phase 2: 预制体嵌套引用 ===');
   addNestedPrefabRef(arr, 'NestedPauseBtn', BASE_UUIDS.ScriptButton, 'GameHUD');
   fs.writeFileSync(out, JSON.stringify(arr, null, 2));
   writeMeta(out, hudUuid, 'prefab');
-  console.log('  ✅ GameHUD.prefab (3个嵌套引用)');
+  console.log('  ✅ GameHUD.prefab (3 nested refs)');
 }
 
-// 2b. InventoryBag — 嵌套 12 个 InventorySlot
+// 2b. InventoryBag — nesting 12 InventorySlots
 {
   const out = path.join(ROOT, 'prefabs', 'InventoryBag.prefab');
   const b = new PrefabBuilder({ name: 'InventoryBag', outputPath: out });
@@ -230,10 +230,10 @@ console.log('\n=== Phase 2: 预制体嵌套引用 ===');
       addNestedPrefabRef(arr, `Slot_${r}_${c}`, BASE_UUIDS.InventorySlot, 'InventoryBag');
   fs.writeFileSync(out, JSON.stringify(arr, null, 2));
   writeMeta(out, generateFileIdV4(), 'prefab');
-  console.log('  ✅ InventoryBag.prefab (12个嵌套 InventorySlot)');
+  console.log('  ✅ InventoryBag.prefab (12 nested InventorySlots)');
 }
 
-// 2c. 深层嵌套: DialogBox 里嵌套 ScriptButton
+// 2c. Deep nest: DialogBox nesting ScriptButton
 {
   const out = path.join(ROOT, 'prefabs', 'DialogNestedBtn.prefab');
   const b = new PrefabBuilder({ name: 'DialogNestedBtn', outputPath: out });
@@ -250,10 +250,10 @@ console.log('\n=== Phase 2: 预制体嵌套引用 ===');
   addNestedPrefabRef(arr, 'NestedOkBtn', BASE_UUIDS.ScriptButton, 'DialogNestedBtn');
   fs.writeFileSync(out, JSON.stringify(arr, null, 2));
   writeMeta(out, generateFileIdV4(), 'prefab');
-  console.log('  ✅ DialogNestedBtn.prefab (Dialog 嵌套 ScriptButton)');
+  console.log('  ✅ DialogNestedBtn.prefab (Dialog nesting ScriptButton)');
 }
 
-// 2d. 三层嵌套: Container → GameHUD (嵌套 HealthPanel) → HealthPanel (嵌套 InventorySlot)
+// 2d. Three-level nest: Container → GameHUD (nests HealthPanel) → HealthPanel (nests InventorySlot)
 {
   const out = path.join(ROOT, 'prefabs', 'DeepNest3.prefab');
   const b = new PrefabBuilder({ name: 'DeepNest3', outputPath: out });
@@ -267,13 +267,13 @@ console.log('\n=== Phase 2: 预制体嵌套引用 ===');
   addNestedPrefabRef(arr, 'NestedHUD', hudUuid, 'DeepNest3');
   fs.writeFileSync(out, JSON.stringify(arr, null, 2));
   writeMeta(out, generateFileIdV4(), 'prefab');
-  console.log('  ✅ DeepNest3.prefab (嵌套 GameHUD → 3个二级嵌套)');
+  console.log('  ✅ DeepNest3.prefab (nests GameHUD → 3 second-level nests)');
 }
 
-// ===== Phase 3: 场景中的脚本 + 预制体引用 =====
-console.log('\n=== Phase 3: 场景脚本与预制体引用 ===');
+// ===== Phase 3: Scripts + Prefab Refs in Scenes =====
+console.log('\n=== Phase 3: Scene Scripts & Prefab References ===');
 
-// 3a. 主场景 — GameController 脚本 + 3 个预制体实例
+// 3a. Main scene — GameController script + 3 prefab instances
 {
   const out = path.join(ROOT, 'scenes', 'ScriptStressScene.scene');
   ensure(path.dirname(out));
@@ -306,7 +306,7 @@ console.log('\n=== Phase 3: 场景脚本与预制体引用 ===');
   console.log('  ✅ ScriptStressScene.scene (GameController + 3个预制体引用)');
 }
 
-// 3b. 100 节点场景 — 5 种脚本类型交替
+// 3b. 100-node scene — 5 script types alternating
 {
   const out = path.join(ROOT, 'scenes', 'MassScriptScene.scene');
   ensure(path.dirname(out));
@@ -330,10 +330,10 @@ console.log('\n=== Phase 3: 场景脚本与预制体引用 ===');
   const sceneUuid3b = arr3b[1]._id;
   fs.writeFileSync(out, JSON.stringify(arr3b, null, 2));
   writeMeta(out, sceneUuid3b, 'scene');
-  console.log('  ✅ MassScriptScene.scene (100节点, 100脚本, 5种类型交替)');
+  console.log('  ✅ MassScriptScene.scene (100 nodes, 100 scripts, 5 types alternating)');
 }
 
-// 3c. 追加场景 — 10轮动态加载新脚本
+// 3c. Append scene — 10 rounds of dynamic script loading
 {
   const out = path.join(ROOT, 'scenes', 'AppendScriptScene.scene');
   ensure(path.dirname(out));
@@ -358,11 +358,11 @@ console.log('\n=== Phase 3: 场景脚本与预制体引用 ===');
         props: { round: r, speed: 1 + r * 0.5, enabled: r % 2 === 0 } })
       .write();
   }
-  console.log('  ✅ AppendScriptScene.scene (10轮增量追加脚本)');
+  console.log('  ✅ AppendScriptScene.scene (10 rounds incremental script append)');
 }
 
-// ===== 验证 =====
-console.log('\n--- 验证结果 ---\n');
+// ===== Validation =====
+console.log('\n--- Validation Results ---\n');
 let totalFiles = 0, totalNodes = 0, totalComps = 0, totalBadRefs = 0;
 function walk(dir) {
   if (!fs.existsSync(dir)) return;

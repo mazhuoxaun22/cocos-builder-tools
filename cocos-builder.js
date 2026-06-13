@@ -1,13 +1,13 @@
 // ============================================================
-// Cocos Creator Prefab / Scene JSON 构建器 — 兼容入口
+// Cocos Creator Prefab / Scene JSON Builder — Compatibility Entry
 // ============================================================
-// 所有实现已拆分到 lib/ 目录，此文件仅做统一导出
-// 用法不变:
-//   node cocos-builder.js                                → 运行内置 Demo
-//   node cocos-builder.js prefab <config.json> [output]   → 生成/追加 Prefab
-//   node cocos-builder.js scene <config.json> [output]    → 生成/追加 Scene
-//   node cocos-builder.js uuid                            → UUID 验证
-//   node cocos-builder.js uuid <uuid|compressed>          → UUID 压缩/解压
+// All implementations are split into lib/ directory; this file only re-exports
+// Usage unchanged:
+//   node cocos-builder.js                                → run built-in Demo
+//   node cocos-builder.js prefab <config.json> [output]   → create/append Prefab
+//   node cocos-builder.js scene <config.json> [output]    → create/append Scene
+//   node cocos-builder.js uuid                            → UUID validation
+//   node cocos-builder.js uuid <uuid|compressed>          → UUID compress/decompress
 // ============================================================
 
 const { compressUuid, decompressUuid, generateFileIdV4 } = require('./lib/uuid');
@@ -18,7 +18,7 @@ const { KNOWN_UUIDS } = require('./lib/constants');
 
 module.exports = { PrefabBuilder, SceneBuilder, compressUuid, decompressUuid, generateFileIdV4, KNOWN_UUIDS, stripSceneFileIds };
 
-// ---- CLI 入口转发 ----
+// ---- CLI entry forwarder ----
 if (require.main === module) {
     require('./cli');
 }
