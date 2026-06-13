@@ -75,12 +75,12 @@ function addNestedPrefabRef(arr, nodeName, targetUuid, prefix) {
   return pfiIdx;
 }
 
-// ===== Phase 1: 5 个带脚本的 Base Prefab =====
-console.log('=== Phase 1: 脚本组件预制体 ===');
+// ===== Phase 1: 5 Base Prefabs with scripts =====
+console.log('=== Phase 1: Script Component Prefabs ===');
 
 const BASE_UUIDS = {};
 
-// 收集所有脚本 UUID
+// Collect all script UUIDs
 const SCRIPT_NAMES = ['ButtonController', 'HealthPanel', 'CountdownTimer', 'TimerDisplay', 'InventorySlot', 'DialogBox'];
 SCRIPT_NAMES.forEach(n => ensureScriptFile(n));
 
@@ -187,7 +187,7 @@ SCRIPT_NAMES.forEach(n => ensureScriptFile(n));
 });
 
 // ===== Phase 2: Prefab Nested References =====
-console.log('\n=== Phase 2: 预制体嵌套引用 ===');
+console.log('\n=== Phase 2: Prefab Nested References ===');
 
 // 2a. GameHUD — nested HealthPanel + CountdownTimer + ScriptButton
 {
@@ -303,7 +303,7 @@ console.log('\n=== Phase 3: Scene Scripts & Prefab References ===');
     addNestedPrefabRef(arr, name, uuid, 'ScriptStressScene');
   fs.writeFileSync(out, JSON.stringify(arr, null, 2));
   writeMeta(out, sceneUuid, 'scene');
-  console.log('  ✅ ScriptStressScene.scene (GameController + 3个预制体引用)');
+  console.log('  ✅ ScriptStressScene.scene (GameController + 3 prefab refs)');
 }
 
 // 3b. 100-node scene — 5 script types alternating
@@ -380,7 +380,7 @@ function walk(dir) {
     const scripts = arr.filter(o => o && o.__type__ && !o.__type__.startsWith('cc.') && o.node);
     totalNodes += nodes.length;
     totalComps += comps.length + scripts.length;
-    // 检查坏引用
+    // Check bad references
     let bad = 0;
     function findBadRefs(obj) {
       if (!obj || typeof obj !== 'object') return;
@@ -397,9 +397,9 @@ function walk(dir) {
 walk(path.join(ROOT, 'prefabs'));
 walk(path.join(ROOT, 'scenes'));
 
-console.log(`  文件: ${totalFiles}  节点: ${totalNodes}  组件+脚本: ${totalComps}  坏引用: ${totalBadRefs}`);
-if (totalBadRefs === 0) console.log('\n🎉 全部通过!');
-else console.log('\n❌ 存在坏引用!');
+console.log(`  Files: ${totalFiles}  Nodes: ${totalNodes}  Comps+Scripts: ${totalComps}  Bad refs: ${totalBadRefs}`);
+if (totalBadRefs === 0) console.log('\n🎉 All passed!');
+else console.log('\n❌ Bad refs found!');
 
-console.log(`\n📜 生成脚本: ${_scriptRegistry.size} 个 .ts 文件`);
+console.log(`\n📜 Generated scripts: ${_scriptRegistry.size} .ts files`);
 _scriptRegistry.forEach((uuid, name) => console.log(`    ${name}.ts  (${uuid})`));

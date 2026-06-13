@@ -71,7 +71,7 @@ function main(args) {
             console.log('Usage: node cli.js prefab <config.json> [output.prefab]');
             process.exit(1);
         }
-        console.log('📄 配置: ' + configPath);
+        console.log('📄 Config: ' + configPath);
         PrefabBuilder.fromJSON(configPath).write(args[2]);
         return;
     }
@@ -84,7 +84,7 @@ function main(args) {
             console.log('Usage: node cli.js scene <config.json> [output.scene]');
             process.exit(1);
         }
-        console.log('📄 配置: ' + configPath);
+        console.log('📄 Config: ' + configPath);
         SceneBuilder.fromJSON(configPath).write(args[2]);
         return;
     }
